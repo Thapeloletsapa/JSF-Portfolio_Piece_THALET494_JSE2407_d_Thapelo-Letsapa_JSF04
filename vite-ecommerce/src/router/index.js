@@ -1,11 +1,10 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
+
+import {createRouter,createWebHistory} from 'vue-router';
 import Home from '../views/Home.vue';
 import Product from '../views/Product.vue';
 import Cart from '../views/Cart.vue';
 import Checkout from '../views/Checkout.vue';
 
-Vue.use(VueRouter);
 
 const routes = [
   { path: '/', component: Home },
@@ -14,7 +13,8 @@ const routes = [
   { path: '/checkout', component: Checkout }
 ];
 
-const router = new VueRouter({
+const router = new createRouter({
+    history: createWebHistory(),
   routes
 });
 
