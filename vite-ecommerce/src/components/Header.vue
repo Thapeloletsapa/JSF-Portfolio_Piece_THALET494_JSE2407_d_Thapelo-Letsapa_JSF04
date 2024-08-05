@@ -1,0 +1,23 @@
+<template>
+    <header class="bg-gray-800 p-4 text-white">
+      <div class="container mx-auto flex justify-between items-center">
+        <router-link to="/" class="text-xl font-bold">Home</router-link>
+        <router-link to="/cart" class="text-xl font-bold">Cart</router-link>
+      </div>
+    </header>
+  </template>
+  
+  <script>
+  export default {
+    name: 'Header'
+  };
+  </script>
+  
+  <style scoped>
+  a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: white;
+  }
+  </style>
+  

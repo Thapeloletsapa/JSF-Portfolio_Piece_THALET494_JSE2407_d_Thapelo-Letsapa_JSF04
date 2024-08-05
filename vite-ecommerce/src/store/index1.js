@@ -1,13 +1,13 @@
-
 import { createStore } from 'vuex';
 import axios from 'axios';
-
 
 export const store = createStore({
   state: {
     products: [],
     categories: [],
-    cart: JSON.parse(localStorage.getItem('cart')) || []
+    cart: JSON.parse(localStorage.getItem('cart')) || [],
+    selectedCategory: '',
+    sortOrder: ''
   },
   mutations: {
     setProducts(state, products) {
@@ -28,6 +28,12 @@ export const store = createStore({
     clearCart(state) {
       state.cart = [];
       localStorage.setItem('cart', JSON.stringify(state.cart));
+    },
+    setCategory(state, category) {
+      state.selectedCategory = category;
+    },
+    setSortOrder(state, sortOrder) {
+      state.sortOrder = sortOrder;
     }
   },
   actions: {
@@ -38,6 +44,23 @@ export const store = createStore({
     async fetchCategories({ commit }) {
       const response = await axios.get('https://fakestoreapi.com/products/categories');
       commit('setCategories', response.data);
+    }
+  },
+  getters: {
+    filteredAndSortedProducts: (state) => {
+      let products = state.products;
+
+      if (state.selectedCategory) {
+        products = products.filter(product => product.category === state.selectedCategory);
+      }
+
+      if (state.sortOrder === 'lowest') {
+        products.sort((a, b) => a.price - b.price);
+      } else if (state.sortOrder === 'highest') {
+        products.sort((a, b) => b.price - a.price);
+      }
+
+      return products;
     }
   }
 });

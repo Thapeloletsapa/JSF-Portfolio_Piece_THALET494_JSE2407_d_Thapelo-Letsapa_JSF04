@@ -1,17 +1,21 @@
 <template>
   <div id="app">
-    <header>
-      <nav>
-        <router-link to="/">Home</router-link>
-        <router-link to="/cart">Cart</router-link>
-      </nav>
-    </header>
+    <Header />
     <router-view></router-view>
   </div>
 </template>
 
 <script>
+import Header from './components/Header.vue';
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    Header
+  }
 };
 </script>
+
+<style>
+/* Global styles can go here */
+</style>
