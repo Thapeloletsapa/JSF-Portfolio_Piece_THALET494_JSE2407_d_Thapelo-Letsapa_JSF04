@@ -1,6 +1,5 @@
 <template>
     <div>
-      <h1 class="text-3xl font-bold mb-4">Products</h1>
       <ProductList :products="products" />
     </div>
   </template>
