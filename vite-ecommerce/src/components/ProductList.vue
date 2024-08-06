@@ -1,24 +1,26 @@
 <template>
-  <div>
-    <div class="mb-4">
-      <label for="category" class="block text-sm font-medium text-gray-700">Filter by Category</label>
-      <select id="category" v-model="selectedCategory" @change="filterProducts" class="p-2 border border-gray-300 rounded w-full">
-        <option value="">All</option>
-        <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-      </select>
-    </div>
-    <div class="mb-4">
-      <label for="sort" class="block text-sm font-medium text-gray-700">Sort by Price</label>
-      <select id="sort" v-model="sortOrder" @change="sortProducts" class="p-2 border border-gray-300 rounded w-full">
-        <option value="">Default</option>
-        <option value="lowest">Lowest to Highest</option>
-        <option value="highest">Highest to Lowest</option>
-      </select>
+ 
+    <div class="mb-4 flex flex-wrap justify-between">
+      <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
+        <label for="category" class="block text-sm font-medium text-gray-700">Filter by Category</label>
+        <select id="category" v-model="selectedCategory" @change="filterProducts" class="p-2 border border-gray-300 rounded w-full appearance-none bg-white">
+          <option value="">All</option>
+          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+        </select>
+      </div>
+      <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
+        <label for="sort" class="block text-sm font-medium text-gray-700">Sort by Price</label>
+        <select id="sort" v-model="sortOrder" @change="sortProducts" class="p-2 border border-gray-300 rounded w-full appearance-none bg-white">
+          <option value="">Default</option>
+          <option value="lowest">Lowest to Highest</option>
+          <option value="highest">Highest to Lowest</option>
+        </select>
+      </div>
     </div>
     <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <ProductCard v-for="product in filteredAndSortedProducts" :key="product.id" :product="product" @view-details="viewDetails" />
     </div>
-  </div>
+  
 </template>
 
 <script>
