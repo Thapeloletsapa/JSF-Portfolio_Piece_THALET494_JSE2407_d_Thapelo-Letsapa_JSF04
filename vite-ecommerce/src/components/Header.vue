@@ -4,6 +4,7 @@
         <router-link to="/" class="text-xl font-bold">Home</router-link>
         <img src="../assets/Shopify_E-commerce_Logo_Web_Design_PNG_-_Free_Download-removebg-preview.png" className="h-11" alt="Flowbite Logo" />
         <router-link to="/cart" class="text-xl font-bold">Cart</router-link>
+        <router-link to="/login" class="text-xl font-bold">Login</router-link>
       </div>
     </header>
   </template>
