@@ -15,7 +15,7 @@ const routes = [
   { path: '/login', component: Login }
 ];
 
-const router = new createRouter({
+const router = createRouter({
     history: createWebHistory(),
   routes
 });
