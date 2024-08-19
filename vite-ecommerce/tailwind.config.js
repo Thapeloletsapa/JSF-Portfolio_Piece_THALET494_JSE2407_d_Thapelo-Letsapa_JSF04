@@ -5,7 +5,12 @@ export default {
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        'tim': "url('/vite-ecommerce/src/assets/tim.jpg')"
+      }
+    },
   },
   plugins: [],
 }
+

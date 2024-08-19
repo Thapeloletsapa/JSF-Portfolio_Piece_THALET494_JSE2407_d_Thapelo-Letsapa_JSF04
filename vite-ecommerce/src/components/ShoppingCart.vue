@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="bg-tim">
       <h2 class="text-2xl font-bold mb-4">Shopping Cart</h2>
       <div v-for="item in cart" :key="item.id" class="flex items-center mb-4">
         <img :src="item.image" alt="" class="w-16 h-16 object-contain mr-4">

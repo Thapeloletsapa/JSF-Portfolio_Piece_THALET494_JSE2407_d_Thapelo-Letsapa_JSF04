@@ -1,5 +1,5 @@
 <template>
- 
+  <div class="container mx-auto p-4 pt-6 md:p-6 lg:p-12">
     <div class="mb-4 flex flex-wrap justify-between">
       <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
         <label for="category" class="block text-sm font-medium text-gray-700">Filter by Category</label>
@@ -20,12 +20,12 @@
     <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <ProductCard v-for="product in filteredAndSortedProducts" :key="product.id" :product="product" @view-details="viewDetails" />
     </div>
-  
+  </div>
 </template>
 
 <script>
 import ProductCard from './ProductCard.vue';
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 
 export default {
   components: {
@@ -48,10 +48,10 @@ export default {
       this.$router.push({ name: 'Product', params: { id: product.id } });
     },
     filterProducts() {
-      this.setCategory(this.selectedCategory);
+      this.$store.commit('setCategory', this.selectedCategory);
     },
     sortProducts() {
-      this.setSortOrder(this.sortOrder);
+      this.$store.commit('setSortOrder', this.sortOrder);
     }
   },
   created() {

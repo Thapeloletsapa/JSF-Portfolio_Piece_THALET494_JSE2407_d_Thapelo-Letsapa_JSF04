@@ -1,5 +1,6 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
+import Comparison from '../views/Comparison.vue'
 
 export const store = createStore({
   state: {
@@ -10,6 +11,9 @@ export const store = createStore({
     sortOrder: ''
   },
   mutations: {
+    setToken(state, token) {
+      state.token = token;
+    },
     setProducts(state, products) {
       state.products = products;
     },

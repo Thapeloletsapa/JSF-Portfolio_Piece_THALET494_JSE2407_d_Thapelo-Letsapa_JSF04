@@ -1,26 +1,56 @@
 <template>
-    <div class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-      <img class="p-8 rounded-t-lg bg-contain" :src="product.image" :alt="product.title" />
-      <div class="px-5 pb-5">
-        <h5 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ product.title }}</h5>
-        <div class="flex items-center mt-2.5 mb-5">
-          <!-- Render the rating here -->
-          <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-3">{{ product.rating.rate }}</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-3xl font-bold text-gray-900 dark:text-white">${{ product.price }}</span>
-          <p class="text-gray-600 mb-2">{{ product.category }}</p>
-          <button @click="$emit('view-details', product)" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">View Details</button>
-        </div>
-      </div>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    props: {
-      product: Object
-    }
-  };
-  </script>
+  <div class="product-card" @click="navigateToProductDetail">
+    <img :src="product.image" :alt="product.title" class="product-image" />
+    <h3>{{ product.title }}</h3>
+    <p>${{ product.price }}</p>
+    <p>{{ product.category }}</p>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'ProductCard',
+  props: {
+    product: Object,
+  },
+  methods: {
+    navigateToProductDetail() {
+      this.$router.push(`/product/${this.product.id}`);
+    },
+  },
+};
+</script>
+
+<style scoped>
+.product-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.product-card:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.product-image {
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+h3 {
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+p {
+  font-size: 16px;
+  color: #666;
+}
+</style>
+
   
