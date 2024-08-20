@@ -2,16 +2,16 @@
   <header class="header">
     <h1 class="logo">My E-Commerce Store</h1>
     <nav>
-      <router-link to="/">Home</router-link>
-      <router-link to="/login">Login</router-link>
-      <router-link to="/cart">Cart ({{ cartItemCount }})</router-link>
-      <router-link to="/Comparison">Compare</router-link>
+      <router-link :to="{ name: 'home' }">Home</router-link>
+      <router-link :to="{ name: 'login' }">Login</router-link>
+      <router-link :to="{ name: 'cart' }">Cart ({{ cartItemCount }})</router-link>
+      <router-link :to="{ name: 'comparison' }">Compare</router-link>
     </nav>
   </header>
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
 
 export default {

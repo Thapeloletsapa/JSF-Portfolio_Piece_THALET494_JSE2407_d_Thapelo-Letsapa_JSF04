@@ -1,7 +1,7 @@
 <template>
     <div class="comparison-container">
       <h2>Product Comparison</h2>
-      <div v-if="comparisonList.length === 0">
+      <div v-if="!comparisonList || comparisonList.length === 0">
         <p>No products to compare.</p>
       </div>
       <div v-else>
@@ -50,22 +50,23 @@
   
   export default {
     name: 'Comparison',
-    setup() {
-      const store = useStore();
-      const comparisonList = computed(() => store.getters.comparisonList);
+  setup() {
+    const store = useStore();
+    const comparisonList = computed(() => store.getters.comparisonList);
+
+    const removeFromComparison = (productId) => {
+      store.commit('removeFromComparison', productId);
+    };
   
-      const removeFromComparison = (productId) => {
-        store.commit('removeFromComparison', productId);
-      };
+    const clearComparisonList = () => {
+      store.commit('clearComparisonList');
+    };
+
   
-      const clearComparisonList = () => {
-        store.commit('clearComparisonList');
-      };
-  
-      return {
-        comparisonList,
-        removeFromComparison,
-        clearComparisonList,
+    return {
+      comparisonList,
+      removeFromComparison,
+      clearComparisonList,
       };
     },
   };
