@@ -17,7 +17,14 @@
         </select>
       </div>
     </div>
-    <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div v-if="loading" class="text-center">
+      <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12H4zm2 5.291A7.962 7.962 0 014 19.708a7.962 7.962 0 0114.708 0 1.992 1.992 0 012.708 0z"></path>
+      </svg>
+      Loading...
+    </div>
+    <div v-else class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <ProductCard v-for="product in filteredAndSortedProducts" :key="product.id" :product="product" @view-details="viewDetails" />
     </div>
   </div>
@@ -34,7 +41,8 @@ export default {
   data() {
     return {
       selectedCategory: '',
-      sortOrder: ''
+      sortOrder: '',
+      loading: true
     };
   },
   computed: {
@@ -43,7 +51,7 @@ export default {
   },
   methods: {
     ...mapMutations(['setCategory', 'setSortOrder']),
-    ...mapActions(['fetchCategories']),
+    ...mapActions(['fetchCategories', 'fetchProducts']),
     viewDetails(product) {
       this.$router.push({ name: 'Product', params: { id: product.id } });
     },
@@ -55,7 +63,11 @@ export default {
     }
   },
   created() {
-    this.fetchCategories();
+    this.fetchCategories().then(() => {
+      this.fetchProducts().then(() => {
+        this.loading = false;
+      });
+    });
   }
 };
 </script>

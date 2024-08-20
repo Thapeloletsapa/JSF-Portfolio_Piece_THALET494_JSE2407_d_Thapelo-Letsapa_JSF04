@@ -40,6 +40,7 @@ export default {
   width: 100%;
   height: auto;
   margin-bottom: 10px;
+  padding: 10px
 }
 
 h3 {
