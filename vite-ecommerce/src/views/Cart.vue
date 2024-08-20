@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useStore } from 'vuex';
 import { jwtDecode } from 'jwt-decode';
 
@@ -25,13 +25,13 @@ export default {
     const store = useStore();
     const token = localStorage.getItem('token');
     const userId = token ? jwtDecode(token).id : null;
-    const cart = computed(() => store.getters.cart[userId] || []);
-  
-const totalCost = computed(() => {
-  if (!cart.value) return 0; // Add this line
-  if (cart.value.length === 0) return 0;
-  return cart.value.reduce((acc, item) => acc + item.price * item.quantity, 0);
-});
+    const cart = ref(store.state.cart[userId] || []);
+
+    const totalCost = computed(() => {
+      if (!cart.value) return 0;
+      if (cart.value.length === 0) return 0;
+      return cart.value.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    });
 
     const updateQuantity = (item, quantity) => {
       if (quantity > 0) {
