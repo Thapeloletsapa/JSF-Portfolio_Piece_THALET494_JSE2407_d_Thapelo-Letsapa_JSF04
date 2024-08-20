@@ -1,6 +1,5 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
-import Comparison from '../views/Comparison.vue'
 
 export const store = createStore({
   state: {
@@ -29,6 +28,17 @@ export const store = createStore({
       }
       localStorage.setItem('cart', JSON.stringify(state.cart));
     },
+    updateQuantity(state, { id, quantity }) {
+      const item = state.cart.find(item => item.id === id);
+      if (item) {
+        item.quantity = quantity;
+      }
+      localStorage.setItem('cart', JSON.stringify(state.cart));
+    },
+    removeFromCart(state, id) {
+      state.cart = state.cart.filter(item => item.id !== id);
+      localStorage.setItem('cart', JSON.stringify(state.cart));
+    },
     clearCart(state) {
       state.cart = [];
       localStorage.setItem('cart', JSON.stringify(state.cart));
@@ -48,6 +58,21 @@ export const store = createStore({
     async fetchCategories({ commit }) {
       const response = await axios.get('https://fakestoreapi.com/products/categories');
       commit('setCategories', response.data);
+    },
+    loadCart({ commit }) {
+      const cart = JSON.parse(localStorage.getItem('cart'));
+      if (cart) {
+        commit('cart', cart);
+      }
+    },
+    updateQuantity({ commit }, { id, quantity }) {
+      commit('updateQuantity', { id, quantity });
+    },
+    removeFromCart({ commit }, id) {
+      commit('removeFromCart', id);
+    },
+    clearCart({ commit }) {
+      commit('clearCart');
     }
   },
   getters: {
@@ -65,6 +90,9 @@ export const store = createStore({
       }
 
       return products;
+    },
+    cartTotal: (state) => {
+      return state.cart.reduce((total, item) => total + item.price * item.quantity, 0);
     }
   }
 });

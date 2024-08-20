@@ -2,8 +2,11 @@
   <div v-if="loading">
     <LoadingSpinner />
   </div>
+  <div v-else-if="error">
+    <p>Error: {{ error }}</p>
+  </div>
   <div v-else class="product-detail">
-    <img :src="product.image" :alt="product.title" class="product-image"/>
+    <img v-if="product.image" :src="product.image" :alt="product.title" class="product-image"/>
     <div class="product-info">
       <h2>{{ product.title }}</h2>
       <p>{{ product.description }}</p>
@@ -46,10 +49,9 @@ export default {
 
     const addToCart = () => {
       if (product.value) {
-        try {
+        const existingProduct = store.state.cart.find((item) => item.id === product.value.id);
+        if (!existingProduct) {
           store.commit('addToCart', product.value);
-        } catch (err) {
-          console.error(err);
         }
       }
     };

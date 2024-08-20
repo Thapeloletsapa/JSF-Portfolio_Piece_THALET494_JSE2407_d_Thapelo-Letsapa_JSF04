@@ -9,37 +9,55 @@
         <button @click="removeFromCart(item)">Remove</button>
       </li>
     </ul>
-    <p>Total cost: {{ totalCost }}</p>
+    <p>Total cost: {{ totalCost.toFixed(2) }}</p>
     <button @click="clearCart">Clear cart</button>
+    <p>Items in cart: {{ cart.length }}</p>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from 'vuex';
+import { jwtDecode } from 'jwt-decode';
 
 export default {
   setup() {
     const store = useStore();
-    const cart = computed(() => store.getters.cart || []); // Initialize cart to an empty array if it's undefined
-    const totalCost = computed(() => {
-      if (!cart.value || cart.value.length === 0) return 0; // Return 0 if cart is empty
-      return cart.value.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    });
+    const token = localStorage.getItem('token');
+    const userId = token ? jwtDecode(token).id : null;
+    const cart = computed(() => store.getters.cart[userId] || []);
+  
+const totalCost = computed(() => {
+  if (!cart.value) return 0; // Add this line
+  if (cart.value.length === 0) return 0;
+  return cart.value.reduce((acc, item) => acc + item.price * item.quantity, 0);
+});
 
     const updateQuantity = (item, quantity) => {
       if (quantity > 0) {
-        store.commit('updateQuantity', { item, quantity });
+        store.commit('updateQuantity', { userId, item, quantity });
       }
     };
 
     const removeFromCart = (item) => {
-      store.commit('removeFromCart', item);
+      store.commit('removeFromCart', { userId, item });
     };
 
     const clearCart = () => {
-      store.commit('clearCart');
+      store.commit('clearCart', userId);
     };
+
+    onMounted(() => {
+      if (userId) {
+        store.dispatch('loadCart', userId);
+      }
+    });
+
+    onUnmounted(() => {
+      if (userId) {
+        store.commit('clearCart', userId);
+      }
+    });
 
     return {
       cart,
