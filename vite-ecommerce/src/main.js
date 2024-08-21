@@ -8,6 +8,7 @@ import  {store}  from './store/index1.js'
 
 
 createApp(App)
+
 .use(router)
 .use(store)
 .mount('#app')

@@ -1,15 +1,16 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
-
 export const store = createStore({
   state: {
     products: [],
     categories: [],
-    carts: JSON.parse(localStorage.getItem('carts')) || [], // Store all carts by userId
+    carts: JSON.parse(localStorage.getItem('carts')) || {}, // Initialize as an object
     selectedCategory: '',
     sortOrder: '',
-    cartItemCount: 0,
+    comparison: JSON.parse(localStorage.getItem('comparison')) || {},
+    username: '' ,// Assume you have a way to set the username
+    cart: [],
   },
   mutations: {
     setToken(state, token) {
@@ -25,36 +26,39 @@ export const store = createStore({
       state.carts[userId] = cart;
       localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    ADD_TO_CART(state, { userId, product }) {
-      const cart = state.carts || [];
-      const existingProduct = cart.find(item => item.id === product.id);
-      if (existingProduct) {
-        existingProduct.quantity++;
+    addToCart(state, { userId, product }) {
+      if (!state.carts[userId]) {
+        state.carts[userId] = {};
+      }
+      const { id, price, title, image } = product;
+      if (state.carts[userId][id]) {
+        state.carts[userId][id].quantity += 1;
       } else {
-        cart.push({ ...product, quantity: 1 });
+        state.carts[userId][id] = { quantity: 1, productPrice: price, productTitle: title, productImage: image };
       }
-      state.carts = cart;
       localStorage.setItem('carts', JSON.stringify(state.carts));
-      state.cartItemCount = state.carts.length
-      console.log(state.carts.length)
     },
-
-    updateCart(state, { userId, id, quantity }) {
-      const cart = state.carts[userId];
-      const index = cart.findIndex((item) => item.id === id);
-      if (index !== -1) {
-        cart[index].quantity = quantity;
+    updateCartItem(state, { userId, productId, quantity }) {
+      if (state.carts[userId]) {
+        if (quantity > 0) {
+          state.carts[userId][productId].quantity = quantity;
+        } else {
+          delete state.carts[userId][productId];
+        }
+        localStorage.setItem('carts', JSON.stringify(state.carts));
       }
-      state.carts[userId] = cart;
-      localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    removeFromCart(state, { userId, id }) {
-      const cart = state.carts[userId];
-      state.carts[userId] = cart.filter(item => item.id !== id);
-      localStorage.setItem('carts', JSON.stringify(state.carts));
+    removeFromCart(state, { userId, productId }) {
+      if (state.carts[userId] && state.carts[userId][productId]) {
+        delete state.carts[userId][productId];
+        localStorage.setItem('carts', JSON.stringify(state.carts));
+      }
     },
-    CLEAR_CART(state) {
-      state.cart = [];
+    clearCart(state, userId) {
+      if (state.carts[userId]) {
+        delete state.carts[userId];
+        localStorage.setItem('carts', JSON.stringify(state.carts));
+      }
     },
     setCategory(state, category) {
       state.selectedCategory = category;
@@ -73,27 +77,35 @@ export const store = createStore({
       commit('setCategories', response.data);
     },
     loadCart({ commit }, userId) {
-      const carts = JSON.parse(localStorage.getItem('carts'));
-      if (carts && carts[userId]) {
+      const carts = JSON.parse(localStorage.getItem('carts')) || {};
+      if (carts[userId]) {
         commit('setCart', { userId, cart: carts[userId] });
       }
     },
     addToCart({ commit }, { userId, product }) {
-      commit('ADD_TO_CART', { userId, product });
+      commit('addToCart', { userId, product });
     },
     updateQuantity({ commit }, { userId, id, quantity }) {
-      commit('updateCart', { userId, id, quantity });
+      commit('updateCartItem', { userId, productId: id, quantity });
     },
     removeFromCart({ commit }, { userId, id }) {
-      commit('removeFromCart', { userId, id });
+      commit('removeFromCart', { userId, productId: id });
     },
     clearCart({ commit }, userId) {
-      commit('CLEAR_CART');
-      localStorage.removeItem('cart');
+      commit('clearCart', userId);
     },
   },
-
   getters: {
+
+    cartItemCount(state) {
+      return state.cart.length ;  // Access the cart length
+    },
+    cartContents(state) {
+      return state.cart;
+    },
+    cartTotalCost(state) {
+      return state.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    },
     filteredAndSortedProducts: (state) => {
       let products = state.products;
 
@@ -111,12 +123,9 @@ export const store = createStore({
     },
     cartTotal: (state) => (userId) => {
       const cart = state.carts[userId] || [];
-      return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+      return Object.values(cart).reduce((total, item) => total + item.productPrice * item.quantity, 0);
     },
-    /*cartItemCount: (state) => (userId) => {
-      const cart = state.carts[userId] || [];
-      return cart.length;
-    },*/
-  cartTotalPrice: state => state.cart.reduce((total, item) => total + item.price * item.quantity, 0),
-       }
+  }
 });
+
+

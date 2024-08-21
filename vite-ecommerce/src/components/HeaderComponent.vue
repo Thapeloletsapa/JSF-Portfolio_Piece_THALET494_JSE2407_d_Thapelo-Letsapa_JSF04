@@ -1,12 +1,13 @@
 <template>
   <header class="header">
-    <h1 class="logo">My E-Commerce Store</h1>
+    <img src="../assets/Shopify_E-commerce_Logo_Web_Design_PNG_-_Free_Download-removebg-preview.png" class="h-11" alt="Flowbite Logo" />
+    <h1 class="logo">Convinient Store</h1>
     <nav>
-      <router-link :to="{ name: 'home' }">Home</router-link>
-      <router-link :to="{ name: 'login' }" v-if="!isLoggedIn">Login</router-link>
-      <router-link :to="{ name: 'register' }" v-if="!isLoggedIn">Register</router-link>
-        <router-link :to="{ name: 'cart' }">Cart {{ cartItemCount }}</router-link>
-      <router-link :to="{ name: 'comparison' }" v-if="hasItemsToCompare">Compare</router-link>
+      <RouterLink :to="{ name: 'home' }">Home</RouterLink>
+      <RouterLink :to="{ name: 'login' }" v-if="!isLoggedIn">Login</RouterLink>
+      <RouterLink :to="{ name: 'register' }" v-if="!isLoggedIn">Register</RouterLink>
+      <RouterLink :to="{ name: 'cart' }">Cart {{ cartItemCount }}</RouterLink>
+      <RouterLink :to="{ name: 'comparison' }" v-if="hasItemsToCompare">Compare</RouterLink>
     </nav>
   </header>
 </template>
@@ -14,6 +15,7 @@
 <script>
 import { computed } from 'vue';
 import { useStore } from 'vuex';
+import { RouterLink } from 'vue-router';
 
 export default {
   name: 'HeaderComponent',

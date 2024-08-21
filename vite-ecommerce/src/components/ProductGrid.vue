@@ -1,48 +1,46 @@
+<!-- ProductGrid.vue (updated with filters and sorting) -->
 <template>
-  <div class="container mx-auto p-4 pt-6 md:p-6 lg:p-12">
-    <div class="mb-4 flex flex-wrap justify-between">
-      <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-        <label for="category" class="block text-sm font-medium text-gray-700">Filter by Category</label>
-        <select id="category" v-model="selectedCategory" @change="filterProducts" class="p-2 border border-gray-300 rounded w-full appearance-none bg-white">
-          <option value="">All</option>
-          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-        </select>
-      </div>
-      <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-        <label for="sort" class="block text-sm font-medium text-gray-700">Sort by Price</label>
-        <select id="sort" v-model="sortOrder" @change="sortProducts" class="p-2 border border-gray-300 rounded w-full appearance-none bg-white">
-          <option value="">Default</option>
-          <option value="lowest">Lowest to Highest</option>
-          <option value="highest">Highest to Lowest</option>
-        </select>
-      </div>
-      <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-        <button @click="clearFilters" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full md:w-auto">Clear Filters</button>
-      </div>
+  <div>
+    <div class="filters">
+      <select v-model="selectedCategory" @change="applyFilters">
+        <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+      </select>
+      <select v-model="sortOrder" @change="applySorting">
+        <option value="asc">Price: Low to High</option>
+        <option value="desc">Price: High to Low</option>
+      </select>
     </div>
-
-    <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
+    <div v-if="loading">Loading...</div>
+    <div v-else class="product-grid">
+      <div v-for="product in filteredProducts" :key="product.id" class="product-card" @click="navigateToDetail(product.id)">
+        <img :src="product.image" alt="Product Image">
+        <h3>{{ product.title }}</h3>
+        <p>{{ product.price | currency }}</p>
+        <p>{{ product.category }}</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import ProductCard from "./ProductCard.vue";
-
 export default {
-  name: "ProductsGrid",
-  components: {
-    ProductCard,
-  },
   data() {
     return {
-      categories: [],
-      selectedCategory: "",
-      sortOrder: "",
       products: [],
-      filteredProducts: [],
-    };
+      categories: [],
+      selectedCategory: 'All',
+      sortOrder: 'asc',
+      loading: true
+    }
+  },
+  computed: {
+    filteredProducts() {
+      let result = this.products;
+      if (this.selectedCategory !== 'All') {
+        result = result.filter(product => product.category === this.selectedCategory);
+      }
+      return result.sort((a, b) => this.sortOrder === 'asc' ? a.price - b.price : b.price - a.price);
+    }
   },
   created() {
     this.fetchProducts();
@@ -50,42 +48,32 @@ export default {
   },
   methods: {
     async fetchProducts() {
-      const response = await fetch("https://fakestoreapi.com/products");
-      const data = await response.json();
-      this.products = data;
-      this.filteredProducts = data;
-    },
-    async fetchCategories() {
-      const response = await fetch("https://fakestoreapi.com/products/categories");
-      this.categories = await response.json();
-    },
-    filterProducts() {
-      this.filteredProducts = this.products.filter(product =>
-        this.selectedCategory
-          ? product.category === this.selectedCategory
-          : true
-      );
-      this.sortProducts();
-    },
-    sortProducts() {
-      if (this.sortOrder === "lowest") {
-        this.filteredProducts.sort((a, b) => a.price - b.price);
-      } else if (this.sortOrder === "highest") {
-        this.filteredProducts.sort((a, b) => b.price - a.price);
+      try {
+        const response = await fetch('https://api.example.com/products');
+        this.products = await response.json();
+        this.loading = false;
+      } catch (error) {
+        console.error(error);
+        this.loading = false;
       }
     },
-    clearFilters() {
-      this.selectedCategory = "";
-      this.sortOrder = "";
-      this.filteredProducts = [...this.products];
+    async fetchCategories() {
+      try {
+        const response = await fetch('https://api.example.com/categories');
+        this.categories = await response.json();
+      } catch (error) {
+        console.error(error);
+      }
     },
-  },
-};
-</script>
-
-<style scoped>
-.container {
-  max-width: 1280px;
+    applyFilters() {
+      this.fetchProducts(); // Refresh products based on selected category
+    },
+    applySorting() {
+      this.fetchProducts(); // Refresh products based on selected sorting
+    },
+    navigateToDetail(productId) {
+      this.$router.push({ name: 'ProductDetail', params: { id: productId } });
+    }
+  }
 }
-</style>
-
+</script>
