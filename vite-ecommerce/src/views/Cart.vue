@@ -1,3 +1,9 @@
+
+<template >
+  <h1>
+    Cart
+  </h1>
+</template>
 <script>
 import { ref, computed } from 'vue';
 import { jwtDecode } from "jwt-decode";

@@ -9,7 +9,7 @@ export const store = createStore({
     carts: JSON.parse(localStorage.getItem('carts')) || [], // Store all carts by userId
     selectedCategory: '',
     sortOrder: '',
-    cartItemCount: [],
+    cartItemCount: 0,
   },
   mutations: {
     setToken(state, token) {
@@ -25,10 +25,20 @@ export const store = createStore({
       state.carts[userId] = cart;
       localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    addToCart({ commit, state }, product) {
-      commit('ADD_TO_CART', product);
-      localStorage.setItem('cart', JSON.stringify(state.carts));
+    ADD_TO_CART(state, { userId, product }) {
+      const cart = state.carts || [];
+      const existingProduct = cart.find(item => item.id === product.id);
+      if (existingProduct) {
+        existingProduct.quantity++;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+      state.carts = cart;
+      localStorage.setItem('carts', JSON.stringify(state.carts));
+      state.cartItemCount = state.carts.length
+      console.log(state.carts.length)
     },
+
     updateCart(state, { userId, id, quantity }) {
       const cart = state.carts[userId];
       const index = cart.findIndex((item) => item.id === id);
@@ -68,9 +78,8 @@ export const store = createStore({
         commit('setCart', { userId, cart: carts[userId] });
       }
     },
-    addToCart({ commit }, product) {
-      commit('ADD_TO_CART', product);
-      localStorage.setItem('cart', JSON.stringify(state.cart));
+    addToCart({ commit }, { userId, product }) {
+      commit('ADD_TO_CART', { userId, product });
     },
     updateQuantity({ commit }, { userId, id, quantity }) {
       commit('updateCart', { userId, id, quantity });
@@ -83,6 +92,7 @@ export const store = createStore({
       localStorage.removeItem('cart');
     },
   },
+
   getters: {
     filteredAndSortedProducts: (state) => {
       let products = state.products;
@@ -103,10 +113,10 @@ export const store = createStore({
       const cart = state.carts[userId] || [];
       return cart.reduce((total, item) => total + item.price * item.quantity, 0);
     },
-    cartItemCount: (state) => (userId) => {
+    /*cartItemCount: (state) => (userId) => {
       const cart = state.carts[userId] || [];
       return cart.length;
-    },
+    },*/
   cartTotalPrice: state => state.cart.reduce((total, item) => total + item.price * item.quantity, 0),
        }
 });
