@@ -60,10 +60,11 @@ export default {
     };
 
     const addToCart = () => {
-  if (product.value) {
-    store.dispatch('addToCart', product.value); // Dispatches the addToCart action
-  }
-};
+      if (product.value) {
+        const userId = store.getters.userId; // Assuming userId is stored in Vuex
+        store.dispatch('addToCart', { userId, product: product.value });
+      }
+    };
 
     onMounted(fetchProduct);
 
@@ -111,3 +112,4 @@ button:hover {
   background-color: #0056b3;
 }
 </style>
+

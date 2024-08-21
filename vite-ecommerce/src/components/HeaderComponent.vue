@@ -5,7 +5,7 @@
       <router-link :to="{ name: 'home' }">Home</router-link>
       <router-link :to="{ name: 'login' }" v-if="!isLoggedIn">Login</router-link>
       <router-link :to="{ name: 'register' }" v-if="!isLoggedIn">Register</router-link>
-      <router-link :to="{ name: 'cart' }">Cart ({{ cartItemCount }})</router-link>
+        <router-link :to="{ name: 'cart' }">Cart {{ cartItemCount }}</router-link>
       <router-link :to="{ name: 'comparison' }" v-if="hasItemsToCompare">Compare</router-link>
     </nav>
   </header>
@@ -19,7 +19,7 @@ export default {
   name: 'HeaderComponent',
   setup() {
     const store = useStore();
-    const cartItemCount = computed(() => store.state.cartItemCount);
+    const cartItemCount = computed(() => store.getters.cartItemCount);
     const isLoggedIn = computed(() => store.getters.isLoggedIn);
     const hasItemsToCompare = computed(() => store.getters.hasItemsToCompare);
 

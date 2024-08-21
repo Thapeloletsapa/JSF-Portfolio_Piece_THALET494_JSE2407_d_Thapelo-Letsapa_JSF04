@@ -1,13 +1,15 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 
+
 export const store = createStore({
   state: {
     products: [],
     categories: [],
-    carts: JSON.parse(localStorage.getItem('carts')) || {}, // Store all carts by userId
+    carts: JSON.parse(localStorage.getItem('carts')) || [], // Store all carts by userId
     selectedCategory: '',
-    sortOrder: ''
+    sortOrder: '',
+    cartItemCount: [],
   },
   mutations: {
     setToken(state, token) {
@@ -23,16 +25,9 @@ export const store = createStore({
       state.carts[userId] = cart;
       localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    addToCart(state, { userId, product }) {
-      const cart = state.carts[userId] || [];
-      const item = cart.find(item => item.id === product.id);
-      if (item) {
-        item.quantity++;
-      } else {
-        cart.push({ ...product, quantity: 1 });
-      }
-      state.carts[userId] = cart;
-      localStorage.setItem('carts', JSON.stringify(state.carts));
+    addToCart({ commit, state }, product) {
+      commit('ADD_TO_CART', product);
+      localStorage.setItem('cart', JSON.stringify(state.carts));
     },
     updateCart(state, { userId, id, quantity }) {
       const cart = state.carts[userId];
@@ -48,9 +43,8 @@ export const store = createStore({
       state.carts[userId] = cart.filter(item => item.id !== id);
       localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    clearCart(state, userId) {
-      state.carts[userId] = [];
-      localStorage.setItem('carts', JSON.stringify(state.carts));
+    CLEAR_CART(state) {
+      state.cart = [];
     },
     setCategory(state, category) {
       state.selectedCategory = category;
@@ -74,8 +68,9 @@ export const store = createStore({
         commit('setCart', { userId, cart: carts[userId] });
       }
     },
-    addToCart({ commit }, { userId, product }) {
-      commit('addToCart', { userId, product });
+    addToCart({ commit }, product) {
+      commit('ADD_TO_CART', product);
+      localStorage.setItem('cart', JSON.stringify(state.cart));
     },
     updateQuantity({ commit }, { userId, id, quantity }) {
       commit('updateCart', { userId, id, quantity });
@@ -84,8 +79,9 @@ export const store = createStore({
       commit('removeFromCart', { userId, id });
     },
     clearCart({ commit }, userId) {
-      commit('clearCart', userId);
-    }
+      commit('CLEAR_CART');
+      localStorage.removeItem('cart');
+    },
   },
   getters: {
     filteredAndSortedProducts: (state) => {
@@ -107,9 +103,10 @@ export const store = createStore({
       const cart = state.carts[userId] || [];
       return cart.reduce((total, item) => total + item.price * item.quantity, 0);
     },
-    cartItemsCount: (state) => (userId) => {
+    cartItemCount: (state) => (userId) => {
       const cart = state.carts[userId] || [];
       return cart.length;
     },
-  }
+  cartTotalPrice: state => state.cart.reduce((total, item) => total + item.price * item.quantity, 0),
+       }
 });

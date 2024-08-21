@@ -1,88 +1,73 @@
-<template>
-  <div class="cart">
-    <h2>Cart</h2>
-    <ul>
-      <li v-for="item in cart" :key="item.id">
-        {{ item.name }} ({{ item.quantity }})
-        <button @click="updateQuantity(item, item.quantity - 1)">-</button>
-        <button @click="updateQuantity(item, item.quantity + 1)">+</button>
-        <button @click="removeFromCart(item.id)">Remove</button>
-      </li>
-    </ul>
-    <p>Total cost: {{ totalCost.toFixed(2) }}</p>
-    <button @click="clearCart">Clear cart</button>
-    <p>Items in cart: {{ cart.length }}</p>
-  </div>
-</template>
-
 <script>
-import { computed, onMounted } from 'vue';
-import { useStore } from 'vuex';
-//import jwt_decode from 'jwt-decode';// Fix import
+import { ref, computed } from 'vue';
+import { jwtDecode } from "jwt-decode";
+
 
 export default {
+  name: 'Cart',
   setup() {
-    const store = useStore();
-    const token = localStorage.getItem('token');
-    const userId = token ? jwt_decode(token).id : null;
-
-    const cart = computed(() => store.state.carts[userId] || []);
-
-    const totalCost = computed(() => {
-      return cart.value.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    });
-
-    const updateQuantity = (item, quantity) => {
-      if (quantity > 0) {
-        store.dispatch('updateQuantity', { userId, id: item.id, quantity });
+    function getUserId() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        return decodedToken.userId;
       }
-    };
+      return null;
+    }
 
-    const removeFromCart = (id) => {
-      store.dispatch('removeFromCart', { userId, id });
-    };
+    function getCart() {
+      const userId = getUserId();
+      const cart = localStorage.getItem(`cart_${userId}`);
+      return cart ? JSON.parse(cart) : [];
+    }
 
-    const clearCart = () => {
-      store.dispatch('clearCart', userId);
-    };
+    function saveCart(cart) {
+      const userId = getUserId();
+      localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
+    }
 
-    onMounted(() => {
-      if (userId) {
-        store.dispatch('loadCart', userId);
+    function updateCartItem(productId, quantity) {
+      const cart = getCart();
+      const productIndex = cart.findIndex(item => item.productId === productId);
+
+      if (productIndex !== -1) {
+        cart[productIndex].quantity = quantity;
+
+        if (quantity === 0) {
+          cart.splice(productIndex, 1); 
+        }
+
+        saveCart(cart);
       }
-    });
+    }
+
+    function removeCartItem(productId) {
+      updateCartItem(productId, 0);
+    }
+
+    function clearCart() {
+      const userId = getUserId();
+      localStorage.removeItem(`cart_${userId}`);
+    }
+
+    const cartItems = ref(getCart());
+
+    const totalItems = computed(() =>
+      cartItems.value.reduce((total, item) => total + item.quantity, 0)
+    );
+
+    const totalCost = computed(() =>
+      cartItems.value.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)
+    );
 
     return {
-      cart,
+      cartItems,
+      totalItems,
       totalCost,
-      updateQuantity,
-      removeFromCart,
-      clearCart,
+      updateCartItem,
+      removeCartItem,
+      clearCart
     };
   },
 };
 </script>
-
-<style scoped>
-.cart {
-  margin-top: 20px;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.cart ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.cart li {
-  margin-bottom: 10px;
-}
-
-.cart button {
-  margin-left: 10px;
-}
-</style>
