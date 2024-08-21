@@ -6,23 +6,30 @@
     <p>Error: {{ error }}</p>
   </div>
   <div v-else class="product-detail">
-    <img v-if="product.image" :src="product.image" :alt="product.title" class="product-image"/>
+    <img
+      v-if="product.image"
+      :src="product.image"
+      :alt="product.title"
+      class="product-image"
+    />
     <div class="product-info">
       <h2>{{ product.title }}</h2>
       <p>{{ product.description }}</p>
       <p>Category: {{ product.category }}</p>
       <p>Price: ${{ product.price }}</p>
-      <p>Rating: {{ product.rating.rate }} ({{ product.rating.count }} reviews)</p>
-      <button @click="addToCart">Add to Cart</button>
+      <p>
+        Rating: {{ product.rating.rate }} ({{ product.rating.count }} reviews)
+      </p>
+      <button @click="addToCart" aria-label="Add to Cart">Add to Cart</button>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { useStore } from 'vuex';
-import LoadingSpinner from './LoadingSpinner.vue'
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useStore } from "vuex";
+import LoadingSpinner from "./LoadingSpinner.vue";
 
 export default {
   components: {
@@ -38,7 +45,12 @@ export default {
     const fetchProduct = async () => {
       try {
         loading.value = true;
-        const res = await fetch(`https://fakestoreapi.com/products/${route.params.id}`);
+        const res = await fetch(
+          `https://fakestoreapi.com/products/${route.params.id}`
+        );
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
         product.value = await res.json();
         loading.value = false;
       } catch (err) {
@@ -48,13 +60,10 @@ export default {
     };
 
     const addToCart = () => {
-      if (product.value) {
-        const existingProduct = store.state.cart.find((item) => item.id === product.value.id);
-        if (!existingProduct) {
-          store.commit('addToCart', product.value);
-        }
-      }
-    };
+  if (product.value) {
+    store.dispatch('addToCart', product.value); // Dispatches the addToCart action
+  }
+};
 
     onMounted(fetchProduct);
 

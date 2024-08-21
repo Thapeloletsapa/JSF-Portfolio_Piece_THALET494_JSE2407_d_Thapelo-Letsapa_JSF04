@@ -6,7 +6,7 @@
         {{ item.name }} ({{ item.quantity }})
         <button @click="updateQuantity(item, item.quantity - 1)">-</button>
         <button @click="updateQuantity(item, item.quantity + 1)">+</button>
-        <button @click="removeFromCart(item)">Remove</button>
+        <button @click="removeFromCart(item.id)">Remove</button>
       </li>
     </ul>
     <p>Total cost: {{ totalCost.toFixed(2) }}</p>
@@ -16,46 +16,39 @@
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import { jwtDecode } from 'jwt-decode';
+//import jwt_decode from 'jwt-decode';// Fix import
 
 export default {
   setup() {
     const store = useStore();
     const token = localStorage.getItem('token');
-    const userId = token ? jwtDecode(token).id : null;
-    const cart = ref(store.state.cart[userId] || []);
+    const userId = token ? jwt_decode(token).id : null;
+
+    const cart = computed(() => store.state.carts[userId] || []);
 
     const totalCost = computed(() => {
-      if (!cart.value) return 0;
-      if (cart.value.length === 0) return 0;
       return cart.value.reduce((acc, item) => acc + item.price * item.quantity, 0);
     });
 
     const updateQuantity = (item, quantity) => {
       if (quantity > 0) {
-        store.commit('updateQuantity', { userId, item, quantity });
+        store.dispatch('updateQuantity', { userId, id: item.id, quantity });
       }
     };
 
-    const removeFromCart = (item) => {
-      store.commit('removeFromCart', { userId, item });
+    const removeFromCart = (id) => {
+      store.dispatch('removeFromCart', { userId, id });
     };
 
     const clearCart = () => {
-      store.commit('clearCart', userId);
+      store.dispatch('clearCart', userId);
     };
 
     onMounted(() => {
       if (userId) {
         store.dispatch('loadCart', userId);
-      }
-    });
-
-    onUnmounted(() => {
-      if (userId) {
-        store.commit('clearCart', userId);
       }
     });
 

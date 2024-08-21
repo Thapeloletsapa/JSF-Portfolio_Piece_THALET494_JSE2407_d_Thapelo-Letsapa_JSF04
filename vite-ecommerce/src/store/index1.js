@@ -5,7 +5,7 @@ export const store = createStore({
   state: {
     products: [],
     categories: [],
-    cart: JSON.parse(localStorage.getItem('cart')) || [],
+    carts: JSON.parse(localStorage.getItem('carts')) || {}, // Store all carts by userId
     selectedCategory: '',
     sortOrder: ''
   },
@@ -19,29 +19,38 @@ export const store = createStore({
     setCategories(state, categories) {
       state.categories = categories;
     },
-    addToCart(state, product) {
-      const item = state.cart.find(item => item.id === product.id);
+    setCart(state, { userId, cart }) {
+      state.carts[userId] = cart;
+      localStorage.setItem('carts', JSON.stringify(state.carts));
+    },
+    addToCart(state, { userId, product }) {
+      const cart = state.carts[userId] || [];
+      const item = cart.find(item => item.id === product.id);
       if (item) {
         item.quantity++;
       } else {
-        state.cart.push({ ...product, quantity: 1 });
+        cart.push({ ...product, quantity: 1 });
       }
-      localStorage.setItem('cart', JSON.stringify(state.cart));
+      state.carts[userId] = cart;
+      localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    updateQuantity(state, { id, quantity }) {
-      const item = state.cart.find(item => item.id === id);
-      if (item) {
-        item.quantity = quantity;
+    updateCart(state, { userId, id, quantity }) {
+      const cart = state.carts[userId];
+      const index = cart.findIndex((item) => item.id === id);
+      if (index !== -1) {
+        cart[index].quantity = quantity;
       }
-      localStorage.setItem('cart', JSON.stringify(state.cart));
+      state.carts[userId] = cart;
+      localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    removeFromCart(state, id) {
-      state.cart = state.cart.filter(item => item.id !== id);
-      localStorage.setItem('cart', JSON.stringify(state.cart));
+    removeFromCart(state, { userId, id }) {
+      const cart = state.carts[userId];
+      state.carts[userId] = cart.filter(item => item.id !== id);
+      localStorage.setItem('carts', JSON.stringify(state.carts));
     },
-    clearCart(state) {
-      state.cart = [];
-      localStorage.setItem('cart', JSON.stringify(state.cart));
+    clearCart(state, userId) {
+      state.carts[userId] = [];
+      localStorage.setItem('carts', JSON.stringify(state.carts));
     },
     setCategory(state, category) {
       state.selectedCategory = category;
@@ -59,20 +68,23 @@ export const store = createStore({
       const response = await axios.get('https://fakestoreapi.com/products/categories');
       commit('setCategories', response.data);
     },
-    loadCart({ commit }) {
-      const cart = JSON.parse(localStorage.getItem('cart'));
-      if (cart) {
-        commit('cart', cart);
+    loadCart({ commit }, userId) {
+      const carts = JSON.parse(localStorage.getItem('carts'));
+      if (carts && carts[userId]) {
+        commit('setCart', { userId, cart: carts[userId] });
       }
     },
-    updateQuantity({ commit }, { id, quantity }) {
-      commit('updateQuantity', { id, quantity });
+    addToCart({ commit }, { userId, product }) {
+      commit('addToCart', { userId, product });
     },
-    removeFromCart({ commit }, id) {
-      commit('removeFromCart', id);
+    updateQuantity({ commit }, { userId, id, quantity }) {
+      commit('updateCart', { userId, id, quantity });
     },
-    clearCart({ commit }) {
-      commit('clearCart');
+    removeFromCart({ commit }, { userId, id }) {
+      commit('removeFromCart', { userId, id });
+    },
+    clearCart({ commit }, userId) {
+      commit('clearCart', userId);
     }
   },
   getters: {
@@ -91,8 +103,13 @@ export const store = createStore({
 
       return products;
     },
-    cartTotal: (state) => {
-      return state.cart.reduce((total, item) => total + item.price * item.quantity, 0);
-    }
+    cartTotal: (state) => (userId) => {
+      const cart = state.carts[userId] || [];
+      return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    },
+    cartItemsCount: (state) => (userId) => {
+      const cart = state.carts[userId] || [];
+      return cart.length;
+    },
   }
 });
