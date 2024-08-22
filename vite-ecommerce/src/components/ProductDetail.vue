@@ -33,7 +33,7 @@
 
       <!-- Add to Cart Button -->
       <button class="add-to-cart-btn" @click="handleAddToCart">
-        <img src="../assets/Add2.svg" alt="Add to Cart" class="cart-icon" />
+       
         {{ buttonText }}
       </button>
     </div>
@@ -47,6 +47,7 @@ import { useRoute } from "vue-router";
 import { useStore } from 'vuex';
 import StarRating from './StarRating.vue';
 import Reviews from './Reviews.vue'; 
+
 
 export default {
   name: "ProductDetail",
