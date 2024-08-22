@@ -5,15 +5,15 @@
     <nav>
       <RouterLink :to="{ name: 'home' }">Home</RouterLink>
       <RouterLink :to="{ name: 'login' }" v-if="!isLoggedIn">Login</RouterLink>
-      <RouterLink :to="{ name: 'register' }" v-if="!isLoggedIn">Register</RouterLink>
+      <RouterLink :to="{ name: 'register' }" v-if="!isLoggedIn">Compare</RouterLink>
       <RouterLink :to="{ name: 'cart' }">Cart {{ cartItemCount }}</RouterLink>
-      <RouterLink :to="{ name: 'comparison' }" v-if="hasItemsToCompare">Compare</RouterLink>
+      <RouterLink :to="{ name: 'comparison' }" v-if="hasItemsToCompare"> Compare </RouterLink>
     </nav>
   </header>
 </template>
 
 <script>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { RouterLink } from 'vue-router';
 
@@ -24,8 +24,12 @@ export default {
     const store = useStore();
     const cartItemCount = computed(() => store.getters.cartItemCount);
     const isLoggedIn = computed(() => store.getters.isLoggedIn);
-    const hasItemsToCompare = computed(() => store.getters.hasItemsToCompare);
+    const hasItemsToCompare = ref(false);
 
+    store.subscribe((mutation) => {
+      hasItemsToCompare.value = store.getters.hasItemsToCompare;
+    });
+    
     return {
       cartItemCount,
       isLoggedIn,

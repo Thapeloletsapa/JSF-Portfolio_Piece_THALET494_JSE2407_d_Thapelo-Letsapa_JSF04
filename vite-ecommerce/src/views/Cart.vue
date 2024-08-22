@@ -12,8 +12,8 @@
         <div class="item-details">
           <p>{{ item.productTitle }}</p>
           <p>Price: ${{ item.productPrice }}</p>
-          <p>Quantity: {{ cartItemCount }}</p>
-          <p>Total: ${{  cartTotalCost | currency}}</p>
+          <p>Quantity: {{ item.quantity }}</p>
+          <p>Total: ${{ (item.productPrice * item.quantity).toFixed(2) }}</p>
         </div>
         <!-- Delete Item Button -->
         <button @click="removeItemFromCart(productId)" class="delete-button">
@@ -31,8 +31,12 @@
       <router-link to="/" class="go-back-button">
         Go Back
       </router-link>
+      <!-- Clear All Button -->
+      <button @click="clearAllItems" class="clear-all-button">
+        Clear All
+      </button>
       <!-- Checkout Button -->
-      <button @click="checkout" class="checkout-button" to="/">
+      <button @click="checkout" class="checkout-button">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 11l3 3L22 4m-5 16H7a2 2 0 0 1-2-2V5H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -49,6 +53,7 @@
   </main>
 </template>
 
+
 <script>
 import { mapGetters, mapActions } from 'vuex';
 
@@ -58,17 +63,23 @@ export default {
     ...mapGetters(['cartItemCount', 'cartTotalCost', 'cartContents']),
   },
   methods: {
-    ...mapActions(['removeFromCart']),
+    ...mapActions(['addItemToCart','removeFromCart', 'clearCart']),
     getProductImage(item) {
       return item.productImage; // Returns the image URL of the product
     },
     removeItemFromCart(productId) {
       this.removeFromCart(productId);
     },
+    clearAllItems() {
+      this.clearCart(); // Clear all items from the cart
+    },
     checkout() {
       // Navigate to the Checkout page
       this.$router.push({ name: 'Checkout' });
-    }
+    },
+    setToken(token) {
+      this.$store.commit('setToken', token)
+    },
   }
 }
 </script>
@@ -150,6 +161,22 @@ export default {
 
 .go-back-button:hover {
   background-color: #0056b3;
+}
+
+.clear-all-button {
+  background-color: #ffc107;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.clear-all-button:hover {
+  background-color: #e0a800;
 }
 
 .checkout-button {

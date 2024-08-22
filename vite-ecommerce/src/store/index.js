@@ -21,7 +21,7 @@ export const store = createStore({
         email: ''
       },
       orderHistory: JSON.parse(localStorage.getItem('orderHistory')) || {},
-
+      token: null,
     };
   },
   mutations: {
@@ -42,6 +42,10 @@ export const store = createStore({
       state.orders = state.orders.filter(order => order.id !== orderId);
     },
 
+    setToken(state, token) {
+      state.token = token
+    }, 
+    
     setSearchTerm(state, searchTerm) {
       state.searchTerm = searchTerm;
     },
