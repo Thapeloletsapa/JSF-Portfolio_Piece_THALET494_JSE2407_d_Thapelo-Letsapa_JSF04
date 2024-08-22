@@ -1,73 +1,200 @@
 <template>
-  <div class="container mx-auto p-4 pt-6 md:p-6 lg:p-12">
-    <div class="mb-4 flex flex-wrap justify-between">
-      <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-        <label for="category" class="block text-sm font-medium text-gray-700">Filter by Category</label>
-        <select id="category" v-model="selectedCategory" @change="filterProducts" class="p-2 border border-gray-300 rounded w-full appearance-none bg-white">
-          <option value="">All</option>
-          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-        </select>
-      </div>
-      <div class="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-        <label for="sort" class="block text-sm font-medium text-gray-700">Sort by Price</label>
-        <select id="sort" v-model="sortOrder" @change="sortProducts" class="p-2 border border-gray-300 rounded w-full appearance-none bg-white">
-          <option value="">Default</option>
-          <option value="lowest">Lowest to Highest</option>
-          <option value="highest">Highest to Lowest</option>
-        </select>
-      </div>
+  <div class="p-6">
+    <div class="controls mb-4 flex flex-wrap gap-4">
+      <!-- Sorting Dropdown -->
+      <select
+        v-model="sorting"
+        class="control-item p-2 border rounded"
+        @change="saveStateToLocalStorage"
+      >
+        <option value="default">Default</option>
+        <option value="low">Price: Low to High</option>
+        <option value="high">Price: High to Low</option>
+      </select>
+
+      <!-- Search Input -->
+      <input
+        type="text"
+        v-model="searchTerm"
+        placeholder="Search products..."
+        class="control-item p-2 border rounded flex-1"
+        @input="saveStateToLocalStorage"
+      />
+
+      <!-- Categories Dropdown -->
+      <select
+        v-model="filterItem"
+        class="control-item p-2 border rounded"
+        @change="saveStateToLocalStorage"
+      >
+        <option value="All categories">All categories</option>
+        <option v-for="category in categories" :key="category" :value="category">
+          {{ category }}
+        </option>
+      </select>
     </div>
-    <div v-if="loading" class="text-center">
-      <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12H4zm2 5.291A7.962 7.962 0 014 19.708a7.962 7.962 0 0114.708 0 1.992 1.992 0 012.708 0z"></path>
-      </svg>
-      Loading...
+
+    <!-- Display Loading, Error, or Products -->
+    <div v-if="loading">
+      <p>Loading...</p>
     </div>
-    <div v-else class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <ProductCard v-for="product in filteredAndSortedProducts" :key="product.id" :product="product" @view-details="viewDetails" />
+    <div v-else-if="error">
+      <p class="text-red-500">{{ error }}</p>
+    </div>
+    <div v-else-if="filteredProducts.length === 0">
+      <p>No products available.</p>
+    </div>
+    <div v-else class="grid-container">
+      <ProductCard
+        v-for="product in filteredProducts"
+        :key="product.id"
+        :product="product"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import ProductCard from './ProductCard.vue';
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import { ref, computed, onMounted } from "vue";
+import ProductCard from "./ProductCard.vue";
 
+/**
+ * ProductList component displays a list of products with search, sorting, and filtering options.
+ *
+ * @component
+ * @example
+ * <ProductList />
+ *
+ * @returns {Object} - Contains reactive properties, computed properties, and methods for the component.
+ * @returns {Ref<Array>} products - The list of products fetched from the API.
+ * @returns {Ref<boolean>} loading - A boolean indicating whether the products are loading.
+ * @returns {Ref<string|null>} error - The error message if the data fetching fails.
+ * @returns {Ref<Array>} categories - The list of unique product categories.
+ * @returns {Ref<string>} searchTerm - The current search term used to filter products.
+ * @returns {Ref<string>} sorting - The current sorting option for the products.
+ * @returns {Ref<string>} filterItem - The current category filter applied to the products.
+ * @returns {ComputedRef<Array>} filteredProducts - The filtered and sorted list of products based on search, sorting, and category filter.
+ * @returns {Function} saveStateToLocalStorage - Saves the current state (search term, sorting, and filter) to local storage.
+ */
 export default {
+  name: "ProductList",
   components: {
-    ProductCard
+    ProductCard,
   },
-  data() {
+  setup() {
+    // Reactive properties
+    const products = ref([]);
+    const loading = ref(true);
+    const error = ref(null);
+    const categories = ref([]);
+    const searchTerm = ref(localStorage.getItem("searchTerm") || "");
+    const sorting = ref(localStorage.getItem("sorting") || "default");
+    const filterItem = ref(localStorage.getItem("filterItem") || "All categories");
+
+    /**
+     * Fetches product data from the API and updates the reactive properties.
+     *
+     * @returns {Promise<void>} - A promise that resolves when the products are fetched.
+     */
+    const fetchProducts = async () => {
+      loading.value = true;
+      error.value = null;
+      try {
+        const response = await fetch("https://fakestoreapi.com/products");
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        products.value = data;
+        const uniqueCategories = [...new Set(data.map((product) => product.category))];
+        categories.value = uniqueCategories;
+      } catch (err) {
+        error.value = err.message;
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    /**
+     * Filters and sorts the list of products based on search term, sorting option, and category filter.
+     *
+     * @returns {Array} - The filtered and sorted list of products.
+     */
+    const filteredProducts = computed(() => {
+      let filtered = products.value.filter(
+        (product) =>
+          product.title.toLowerCase().includes(searchTerm.value.toLowerCase()) &&
+          (filterItem.value === "All categories" || product.category === filterItem.value)
+      );
+
+      if (sorting.value === "low") {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sorting.value === "high") {
+        filtered.sort((a, b) => b.price - a.price);
+      }
+
+      return filtered;
+    });
+
+    /**
+     * Saves the current state (search term, sorting, and filter) to local storage.
+     */
+    const saveStateToLocalStorage = () => {
+      localStorage.setItem("searchTerm", searchTerm.value);
+      localStorage.setItem("sorting", sorting.value);
+      localStorage.setItem("filterItem", filterItem.value);
+    };
+
+    // Fetch products when component is mounted
+    onMounted(() => {
+      fetchProducts();
+    });
+
+    // Expose reactive data and computed properties to the template
     return {
-      selectedCategory: '',
-      sortOrder: '',
-      loading: true
+      products,
+      loading,
+      error,
+      categories,
+      searchTerm,
+      sorting,
+      filterItem,
+      filteredProducts,
+      saveStateToLocalStorage,
     };
   },
-  computed: {
-    ...mapState(['products', 'categories']),
-    ...mapGetters(['filteredAndSortedProducts'])
-  },
-  methods: {
-    ...mapMutations(['setCategory', 'setSortOrder']),
-    ...mapActions(['fetchCategories', 'fetchProducts']),
-    viewDetails(product) {
-      this.$router.push({ name: 'Product', params: { id: product.id } });
-    },
-    filterProducts() {
-      this.$store.commit('setCategory', this.selectedCategory);
-    },
-    sortProducts() {
-      this.$store.commit('setSortOrder', this.sortOrder);
-    }
-  },
-  created() {
-    this.fetchCategories().then(() => {
-      this.fetchProducts().then(() => {
-        this.loading = false;
-      });
-    });
-  }
 };
 </script>
+
+<style scoped>
+/**
+ * Styles for the ProductList component.
+ */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.control-item {
+  flex: 1;
+  min-width: 150px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .controls {
+    flex-wrap: nowrap;
+  }
+
+  .control-item {
+    flex: none;
+    width: auto;
+  }
+}
+</style>

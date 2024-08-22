@@ -19,6 +19,7 @@ import { RouterLink } from 'vue-router';
 
 export default {
   name: 'HeaderComponent',
+  components: { RouterLink },
   setup() {
     const store = useStore();
     const cartItemCount = computed(() => store.getters.cartItemCount);
