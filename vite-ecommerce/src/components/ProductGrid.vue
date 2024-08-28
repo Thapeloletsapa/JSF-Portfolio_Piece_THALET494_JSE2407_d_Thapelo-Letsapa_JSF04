@@ -17,6 +17,7 @@
         <h3>{{ product.title }}</h3>
         <p>{{ product.price | currency }}</p>
         <p>{{ product.category }}</p>
+        
       </div>
     </div>
   </div>

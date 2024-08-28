@@ -6,9 +6,9 @@ export const store = createStore({
       searchTerm: '',
       sorting: 'default',
       filterItem: 'All categories',
-      isLoggedIn: !!localStorage.getItem('jwt'),
+      isLoggedIn: !!localStorage.getItem('token'),
       username: localStorage.getItem('username') || '',
-      cart: JSON.parse(localStorage.getItem('cart')) || {},
+      cart: JSON.parse(localStorage.getItem('cart')).length>0?JSON.parse(localStorage.getItem('cart')) :[],
       wishlist: JSON.parse(localStorage.getItem('wishlist')) || [],
       wishlist2: JSON.parse(localStorage.getItem('wishlist2')) || [],
       reviews: JSON.parse(localStorage.getItem('reviews')) || {}, // Store reviews by productId
@@ -107,13 +107,20 @@ export const store = createStore({
 
 
     addToCart(state, { productId, productPrice, quantity = 1, productTitle, productImage }) {
-      if (!state.cart[state.username]) {
-        state.cart[state.username] = {};
-      }
-      if (state.cart[state.username][productId]) {
-        state.cart[state.username][productId].quantity += quantity;
+      console.log('Update storage')
+      console.log(state.cart)
+      // if (!state.username) {
+      //   state.cart = [];
+      // }
+
+      const productIndex = state.cart.findIndex(item => item.productId === productId);
+
+      if (productIndex !== -1) {
+        state.cart[productId].quantity += quantity;
       } else {
-        state.cart[state.username][productId] = { quantity, productPrice, productTitle, productImage };
+        console.log('update state cart')
+        state.cart.push({ productId, quantity, productPrice, productTitle, productImage });
+        console.log(state.cart)
       }
       localStorage.setItem('cart', JSON.stringify(state.cart));
     },
@@ -128,10 +135,12 @@ export const store = createStore({
       }
     },
     removeFromCart(state, productId) {
-      if (state.cart[state.username] && state.cart[state.username][productId]) {
-        delete state.cart[state.username][productId];
+        console.log('delete')
+        // delete state.cart[productId];
+        state.cart = state.cart.filter(item=> item.productId !== productId);
+        console.log(state.cart)
         localStorage.setItem('cart', JSON.stringify(state.cart));
-      }
+      
     },
     clearCart(state) {
       if (state.cart[state.username]) {
@@ -139,17 +148,17 @@ export const store = createStore({
         localStorage.setItem('cart', JSON.stringify(state.cart));
       }
     },
-    addToCart(state, { productId, productPrice, quantity = 1, productTitle, productImage }) {
-      if (!state.cart[state.username]) {
-        state.cart[state.username] = {};
-      }
-      if (state.cart[state.username][productId]) {
-        state.cart[state.username][productId].quantity += quantity;
-      } else {
-        state.cart[state.username][productId] = { quantity, productPrice, productTitle, productImage };
-      }
-      localStorage.setItem('cart', JSON.stringify(state.cart));
-    },
+    // addToCart(state, { productId, productPrice, quantity = 1, productTitle, productImage }) {
+    //   if (!state.cart[state.username]) {
+    //     state.cart[state.username] = {};
+    //   }
+    //   if (state.cart[state.username][productId]) {
+    //     state.cart[state.username][productId].quantity += quantity;
+    //   } else {
+    //     state.cart[state.username][productId] = { quantity, productPrice, productTitle, productImage };
+    //   }
+    //   localStorage.setItem('cart', JSON.stringify(state.cart));
+    // },
     
     removeFromWishlist(state, productId) {
       state.wishlist = state.wishlist.filter(item => item.productId !== productId);
@@ -299,6 +308,7 @@ export const store = createStore({
     
     // Add an item to the comparison list
     addToComparison({ commit }, payload) {
+      
       commit('addToComparison', payload);
     },
     
@@ -319,6 +329,7 @@ export const store = createStore({
     
     // Add an item to the cart
     addToCart({ commit }, payload) {
+      console.log(12343)
       commit('addToCart', payload);
     },
     
@@ -431,10 +442,10 @@ export const store = createStore({
       }, 0).toFixed(2);
     },
     cartContents: (state) => {
-      if (!state.isLoggedIn || !state.cart[state.username]) {
-        return {};
+      if (!state.isLoggedIn || !state.cart) {
+        return [];
       }
-      return state.cart[state.username];
+      return state.cart;
     },
     wishlistItemCount(state) {
       return state.wishlist.length;

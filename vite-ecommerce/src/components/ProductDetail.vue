@@ -84,6 +84,7 @@ export default {
     };
 
     const handleAddToCart = () => {
+      console.log('handleAddToCart')
       store.dispatch('addToCart', {
         productId: product.value.id,
         productPrice: product.value.price,
@@ -91,6 +92,7 @@ export default {
         productTitle: product.value.title,
         productImage: product.value.image,
       });
+      console.log(store)
       buttonText.value = 'Added';
       setTimeout(() => {
         buttonText.value = 'Add to Cart';

@@ -1,13 +1,13 @@
 <template>
   <main class="cart-container">
     <h1>Your Cart</h1>
-    <div v-if="cartItemCount === 0" class="empty-cart">
+    <div v-if="cartContents.length<1" class="empty-cart">
       Your cart is empty.
     </div>
     <div v-else class="cart-items">
       <div v-for="(item, productId) in cartContents" :key="productId" class="cart-item">
         <!-- Display the product image -->
-        <img :src="getProductImage(item)" :alt="item.productTitle" class="product-image"/>
+        <img :src="item.productImage" :alt="item.productTitle" class="product-image"/>
         
         <div class="item-details">
           <p>{{ item.productTitle }}</p>
@@ -16,7 +16,7 @@
           <p>Total: ${{ (item.productPrice * item.quantity).toFixed(2) }}</p>
         </div>
         <!-- Delete Item Button -->
-        <button @click="removeItemFromCart(productId)" class="delete-button">
+        <button @click="removeItemFromCart(item.productId)" class="delete-button">
           Delete
         </button>
       </div>
