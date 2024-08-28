@@ -1,4 +1,7 @@
 import { createStore } from 'vuex';
+import  Vuex from 'vuex'
+
+
 
 export const store = createStore({
   state() {
